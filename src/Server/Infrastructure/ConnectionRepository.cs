@@ -1,10 +1,10 @@
-﻿using FunkyPipelineChat.Server.Models;
+﻿using FunkyChat.Server.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FunkyPipelineChat.Server.Infrastructure
+namespace FunkyChat.Server.Infrastructure
 {
     public class ConnectionRepository
     {

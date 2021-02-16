@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 
-namespace FunkyPipelineChat.Client
+namespace FunkyChat.Client
 {
     class Program
     {

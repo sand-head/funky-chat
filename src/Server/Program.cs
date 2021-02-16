@@ -1,10 +1,10 @@
-﻿using FunkyPipelineChat.Server.Infrastructure;
-using FunkyPipelineChat.Server.Services;
+﻿using FunkyChat.Server.Infrastructure;
+using FunkyChat.Server.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 
-namespace FunkyPipelineChat.Server
+namespace FunkyChat.Server
 {
     class Program
     {

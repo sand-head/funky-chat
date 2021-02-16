@@ -1,5 +1,5 @@
-﻿using FunkyPipelineChat.Server.Infrastructure;
-using FunkyPipelineChat.Server.Models;
+﻿using FunkyChat.Server.Infrastructure;
+using FunkyChat.Server.Models;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net;
@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace FunkyPipelineChat.Server.Services
+namespace FunkyChat.Server.Services
 {
     public class IncomingConnectionService : BackgroundService
     {

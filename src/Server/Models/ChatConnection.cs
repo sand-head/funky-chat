@@ -2,7 +2,7 @@
 using System.IO.Pipelines;
 using System.Net.Sockets;
 
-namespace FunkyPipelineChat.Server.Models
+namespace FunkyChat.Server.Models
 {
     public record ChatConnection : IDuplexPipe
     {
