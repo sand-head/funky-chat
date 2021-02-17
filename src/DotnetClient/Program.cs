@@ -1,4 +1,10 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using FunkyChat.Protos;
+using Google.Protobuf;
+using System;
+using System.IO.Pipelines;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace FunkyChat.Client
@@ -7,16 +13,31 @@ namespace FunkyChat.Client
     {
         static async Task Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
+            var clientSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 
-            await host.RunAsync();
-        }
+            Console.WriteLine("Connecting to server at port 13337...");
+            clientSocket.Connect(new IPEndPoint(IPAddress.Loopback, 13337));
 
-        static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureServices((context, services) =>
+            var stream = new NetworkStream(clientSocket);
+            var reader = PipeReader.Create(stream);
+            var writer = PipeWriter.Create(stream);
+
+            while (true)
+            {
+                Console.Write("> ");
+                var input = Console.ReadLine();
+                var message = new EchoMessage
                 {
-                    // configure services here
-                });
+                    Message = input
+                };
+                message.WriteTo(writer);
+                await writer.FlushAsync();
+
+                var result = await reader.ReadAsync();
+                var output = Encoding.UTF8.GetString(result.Buffer);
+                reader.AdvanceTo(result.Buffer.End);
+                Console.WriteLine($"< {output}");
+            }
+        }
     }
 }

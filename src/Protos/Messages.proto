@@ -1,0 +1,6 @@
+syntax = "proto3";
+option csharp_namespace = "FunkyChat.Protos";
+
+message EchoMessage {
+	string message = 1;
+}

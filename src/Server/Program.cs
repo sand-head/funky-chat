@@ -1,5 +1,5 @@
-﻿using FunkyChat.Server.Infrastructure;
-using FunkyChat.Server.Services;
+﻿using FunkyChat.Server.Services;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
@@ -20,8 +20,8 @@ namespace FunkyChat.Server
                 .ConfigureServices((context, services) =>
                 {
                     // configure services here
-                    services.AddSingleton<ConnectionRepository>();
-                    services.AddHostedService<IncomingConnectionService>();
+                    services.AddMediatR(typeof(Program));
+                    services.AddHostedService<ConnectionService>();
                 });
     }
 }
