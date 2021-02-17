@@ -34,9 +34,9 @@ namespace FunkyChat.Client
                 await writer.FlushAsync();
 
                 var result = await reader.ReadAsync();
-                var output = Encoding.UTF8.GetString(result.Buffer);
+                var response = EchoMessage.Parser.ParseFrom(result.Buffer);
                 reader.AdvanceTo(result.Buffer.End);
-                Console.WriteLine($"< {output}");
+                Console.WriteLine($"< {response.Message}");
             }
         }
     }

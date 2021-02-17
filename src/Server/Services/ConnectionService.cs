@@ -1,5 +1,6 @@
-﻿using FunkyChat.Server.Models;
-using Google.Protobuf.WellKnownTypes;
+﻿using FunkyChat.Protos;
+using FunkyChat.Server.Models;
+using FunkyChat.Server.Models.Commands;
 using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -42,6 +43,7 @@ namespace FunkyChat.Server.Services
             }
             finally
             {
+                _logger.LogInformation("Closing connections...");
                 _listenSocket.Close();
             }
         }
@@ -51,8 +53,17 @@ namespace FunkyChat.Server.Services
             while (!cancellationToken.IsCancellationRequested)
             {
                 var result = await connection.Input.ReadAsync(cancellationToken);
-                var message = Any.Parser.ParseFrom(result.Buffer);
-                await _mediator.Publish(message);
+                // todo: maybe have a wrapper around the messages?
+                // like have a protobuf "Command" message
+                // that contains "oneof" the other message types
+                var message = EchoMessage.Parser.ParseFrom(result.Buffer);
+                
+                if (message is EchoMessage echoMessage)
+                {
+                    await _mediator.Publish(new EchoCommandContext(connection, echoMessage));
+                }
+
+                connection.Input.AdvanceTo(result.Buffer.End);
             }
         }
     }
