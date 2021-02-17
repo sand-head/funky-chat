@@ -4,6 +4,7 @@ using FunkyChat.Server.Models.Commands;
 using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -50,20 +51,33 @@ namespace FunkyChat.Server.Services
 
         private async Task ReadIncomingAsync(ChatConnection connection, CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            try
             {
-                var result = await connection.Input.ReadAsync(cancellationToken);
-                // todo: maybe have a wrapper around the messages?
-                // like have a protobuf "Command" message
-                // that contains "oneof" the other message types
-                var message = EchoMessage.Parser.ParseFrom(result.Buffer);
-                
-                if (message is EchoMessage echoMessage)
+                while (!cancellationToken.IsCancellationRequested)
                 {
-                    await _mediator.Publish(new EchoCommandContext(connection, echoMessage));
-                }
+                    var result = await connection.Input.ReadAsync(cancellationToken);
+                    // todo: maybe have a wrapper around the messages?
+                    // like have a protobuf "Command" message
+                    // that contains "oneof" the other message types
+                    var command = Command.Parser.ParseFrom(result.Buffer);
 
-                connection.Input.AdvanceTo(result.Buffer.End);
+                    switch (command.CommandCase)
+                    {
+                        case Command.CommandOneofCase.Echo:
+                            await _mediator.Publish(new EchoCommandContext(connection, command.Echo));
+                            break;
+                    }
+
+                    connection.Input.AdvanceTo(result.Buffer.End);
+                }
+            }
+            catch (IOException e)
+            {
+                _logger.LogInformation("Connection with client {Id} closed: {Message}", connection.ConnectionId, e.Message);
+            }
+            finally
+            {
+                connection.Close();
             }
         }
     }

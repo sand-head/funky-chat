@@ -26,17 +26,20 @@ namespace FunkyChat.Client
             {
                 Console.Write("> ");
                 var input = Console.ReadLine();
-                var message = new EchoMessage
+                var command = new Command
                 {
-                    Message = input
+                    Echo = new EchoCommand
+                    {
+                        Message = input
+                    }
                 };
-                message.WriteTo(writer);
+                command.WriteTo(writer);
                 await writer.FlushAsync();
 
                 var result = await reader.ReadAsync();
-                var response = EchoMessage.Parser.ParseFrom(result.Buffer);
+                var response = Command.Parser.ParseFrom(result.Buffer);
                 reader.AdvanceTo(result.Buffer.End);
-                Console.WriteLine($"< {response.Message}");
+                Console.WriteLine($"< {response.Echo.Message}");
             }
         }
     }

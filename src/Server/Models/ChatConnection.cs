@@ -22,5 +22,7 @@ namespace FunkyChat.Server.Models
         public PipeReader Input { get; }
 
         public PipeWriter Output { get; }
+
+        public void Close() => _clientStream.Close();
     }
 }

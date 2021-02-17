@@ -1,6 +1,12 @@
 syntax = "proto3";
 option csharp_namespace = "FunkyChat.Protos";
 
-message EchoMessage {
+message Command {
+	oneof command {
+		EchoCommand echo = 1;
+	}
+}
+
+message EchoCommand {
 	string message = 1;
 }

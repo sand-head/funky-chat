@@ -20,12 +20,15 @@ namespace FunkyChat.Server.Handlers
         public async Task Handle(EchoCommandContext notification, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Echoing back: {Message}", notification.Message.Message);
-            var echoMessage = new EchoMessage
+            var command = new Command
             {
-                Message = notification.Message.Message
+                Echo = new EchoCommand
+                {
+                    Message = notification.Message.Message
+                }
             };
 
-            echoMessage.WriteTo(notification.Output);
+            command.WriteTo(notification.Output);
             await notification.Output.FlushAsync(cancellationToken);
         }
     }

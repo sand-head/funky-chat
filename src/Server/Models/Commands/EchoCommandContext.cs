@@ -3,17 +3,17 @@ using System.IO.Pipelines;
 
 namespace FunkyChat.Server.Models.Commands
 {
-    public class EchoCommandContext : ICommandContext<EchoMessage>
+    public class EchoCommandContext : ICommandContext<EchoCommand>
     {
         private readonly ChatConnection _connection;
 
-        public EchoCommandContext(ChatConnection connection, EchoMessage message)
+        public EchoCommandContext(ChatConnection connection, EchoCommand message)
         {
             _connection = connection;
             Message = message;
         }
 
-        public EchoMessage Message { get; }
+        public EchoCommand Message { get; }
 
         public PipeWriter Output => _connection.Output;
     }
