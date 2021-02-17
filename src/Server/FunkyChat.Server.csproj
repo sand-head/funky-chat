@@ -23,4 +23,14 @@
     </Protobuf>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Data\adjectives.txt" />
+    <None Remove="Data\nouns.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\adjectives.txt" />
+    <EmbeddedResource Include="Data\nouns.txt" />
+  </ItemGroup>
+
 </Project>

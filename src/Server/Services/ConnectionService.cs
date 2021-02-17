@@ -1,6 +1,7 @@
 ﻿using FunkyChat.Protos;
 using FunkyChat.Server.Models;
 using FunkyChat.Server.Models.Commands;
+using Google.Protobuf;
 using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -17,12 +18,14 @@ namespace FunkyChat.Server.Services
     {
         private readonly ILogger<ConnectionService> _logger;
         private readonly IMediator _mediator;
+        private readonly NameGenerationService _nameGeneration;
         private Socket _listenSocket;
 
-        public ConnectionService(ILogger<ConnectionService> logger, IMediator mediator)
+        public ConnectionService(ILogger<ConnectionService> logger, IMediator mediator, NameGenerationService nameGeneration)
         {
             _logger = logger;
             _mediator = mediator;
+            _nameGeneration = nameGeneration;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -37,9 +40,9 @@ namespace FunkyChat.Server.Services
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var socket = await _listenSocket.AcceptAsync();
-                    var connection = new ChatConnection(new NetworkStream(socket));
-                    _logger.LogInformation("Connected to client {ConnectionId}", connection.ConnectionId);
-                    // todo: find a better way to do this:
+                    var connection = new ChatConnection(new NetworkStream(socket), _nameGeneration.Generate());
+                    _logger.LogInformation("Connected to client \"{Username}\" (Id: {ConnectionId})", connection.Username, connection.ConnectionId);
+                    await SendWelcomeMessageAsync(connection, cancellationToken);
                     _ = ReadIncomingAsync(connection, cancellationToken);
                 }
             }
@@ -48,6 +51,20 @@ namespace FunkyChat.Server.Services
                 _logger.LogInformation("Closing connections...");
                 _listenSocket.Close();
             }
+        }
+
+        private async Task SendWelcomeMessageAsync(ChatConnection connection, CancellationToken cancellationToken)
+        {
+            var response = new Response
+            {
+                Welcome = new WelcomeResponse
+                {
+                    UserName = connection.Username
+                }
+            };
+
+            response.WriteTo(connection.Output);
+            await connection.Output.FlushAsync(cancellationToken);
         }
 
         private async Task ReadIncomingAsync(ChatConnection connection, CancellationToken cancellationToken)

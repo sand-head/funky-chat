@@ -21,6 +21,13 @@ namespace FunkyChat.Client
             var reader = PipeReader.Create(stream);
             var writer = PipeWriter.Create(stream);
 
+            // read welcome response for username
+            var welcomeResult = await reader.ReadAsync();
+            var welcomeResponse = Response.Parser.ParseFrom(welcomeResult.Buffer);
+            var username = welcomeResponse.Welcome.UserName;
+            reader.AdvanceTo(welcomeResult.Buffer.End);
+            Console.WriteLine($"Connected! Welcome, {username}!");
+
             while (true)
             {
                 Console.Write("> ");
