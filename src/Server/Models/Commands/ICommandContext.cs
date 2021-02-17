@@ -7,7 +7,7 @@ namespace FunkyChat.Server.Models.Commands
     interface ICommandContext<TProto> : INotification
         where TProto : IMessage<TProto>
     {
-        TProto Message { get; }
+        TProto Command { get; }
         PipeWriter Output { get; }
     }
 }

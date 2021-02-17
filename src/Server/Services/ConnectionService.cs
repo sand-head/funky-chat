@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using CommandType = FunkyChat.Protos.Command.CommandOneofCase;
 
 namespace FunkyChat.Server.Services
 {
@@ -56,15 +57,12 @@ namespace FunkyChat.Server.Services
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var result = await connection.Input.ReadAsync(cancellationToken);
-                    // todo: maybe have a wrapper around the messages?
-                    // like have a protobuf "Command" message
-                    // that contains "oneof" the other message types
                     var command = Command.Parser.ParseFrom(result.Buffer);
 
                     switch (command.CommandCase)
                     {
-                        case Command.CommandOneofCase.Echo:
-                            await _mediator.Publish(new EchoCommandContext(connection, command.Echo));
+                        case CommandType.Echo:
+                            await _mediator.Publish(new EchoCommandContext(connection, command.Echo), cancellationToken);
                             break;
                     }
 

@@ -10,10 +10,10 @@ namespace FunkyChat.Server.Models.Commands
         public EchoCommandContext(ChatConnection connection, EchoCommand message)
         {
             _connection = connection;
-            Message = message;
+            Command = message;
         }
 
-        public EchoCommand Message { get; }
+        public EchoCommand Command { get; }
 
         public PipeWriter Output => _connection.Output;
     }

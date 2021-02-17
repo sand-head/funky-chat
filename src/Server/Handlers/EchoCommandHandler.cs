@@ -8,23 +8,23 @@ using System.Threading.Tasks;
 
 namespace FunkyChat.Server.Handlers
 {
-    public class EchoHandler : INotificationHandler<EchoCommandContext>
+    public class EchoCommandHandler : INotificationHandler<EchoCommandContext>
     {
-        private readonly ILogger<EchoHandler> _logger;
+        private readonly ILogger<EchoCommandHandler> _logger;
 
-        public EchoHandler(ILogger<EchoHandler> logger)
+        public EchoCommandHandler(ILogger<EchoCommandHandler> logger)
         {
             _logger = logger;
         }
 
         public async Task Handle(EchoCommandContext notification, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Echoing back: {Message}", notification.Message.Message);
+            _logger.LogInformation("Echoing back: {Message}", notification.Command.Message);
             var command = new Command
             {
                 Echo = new EchoCommand
                 {
-                    Message = notification.Message.Message
+                    Message = notification.Command.Message
                 }
             };
 
