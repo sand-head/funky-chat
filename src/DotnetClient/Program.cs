@@ -4,7 +4,6 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FunkyChat.Client
@@ -37,7 +36,7 @@ namespace FunkyChat.Client
                 await writer.FlushAsync();
 
                 var result = await reader.ReadAsync();
-                var response = Command.Parser.ParseFrom(result.Buffer);
+                var response = Response.Parser.ParseFrom(result.Buffer);
                 reader.AdvanceTo(result.Buffer.End);
                 Console.WriteLine($"< {response.Echo.Message}");
             }
