@@ -1,0 +1,47 @@
+@startuml State Transition Diagram
+
+state Server {
+  state "Server Socket" as server_socket <<entryPoint>>
+  state "Starting" as server_starting
+  server_starting : Essential services (like name generation) are started
+  server_starting : Socket is created and bound
+  state "Listening" as server_listening
+  server_listening : Socket listens for incoming connections
+  state "Connecting" as server_connecting
+  server_connecting : Server handshakes with Client
+  state fork_state <<fork>>
+  state "Connected" as server_connected {
+    server_connected : A new socket is made for client communication
+    server_connected : Messages are sent to/received from client
+    state "New Socket" as new_socket <<entryPoint>>
+    state "Send Message" as server_send
+
+    [*] --> server_send : If Message\nReceived
+  }
+
+  [*] --> server_starting
+  server_starting --> server_listening
+  server_listening --> server_connecting : On Client\nConnection
+  server_connecting --> fork_state
+  fork_state --> server_listening
+  fork_state --> server_connected
+}
+
+state Client {
+  state "Client Socket" as client_socket <<entryPoint>>
+  state "Starting" as client_starting
+  client_starting : Socket is created and bound
+  state "Connecting" as client_connecting
+  client_connecting : Client attempts to connect to server socket
+  state "Connected" as client_connected
+  client_connected : Messages are sent to/received from server
+
+  [*] --> client_starting
+  client_starting --> client_connecting
+  client_connecting --> client_connected : Success
+  client_connected --> client_connected : New Message Recieved
+}
+
+client_connecting -[dotted]-> server_socket
+client_connected -[dotted]-> new_socket : Message sent from\nclient to server
+server_send -[dotted]-> client_socket : Message sent from\nserver to client
