@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf;
 using MediatR;
-using System.IO.Pipelines;
 
 namespace FunkyChat.Server.Models.Commands
 {
@@ -8,6 +7,6 @@ namespace FunkyChat.Server.Models.Commands
         where TProto : IMessage<TProto>
     {
         TProto Command { get; }
-        PipeWriter Output { get; }
+        ChatConnection Connection { get; }
     }
 }

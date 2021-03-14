@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace FunkyChat.Server.Models
 {
@@ -26,6 +27,11 @@ namespace FunkyChat.Server.Models
 
         public PipeWriter Output { get; }
 
-        public void Close() => _clientStream.Close();
+        public async Task CloseAsync()
+        {
+            _clientStream.Socket.Shutdown(SocketShutdown.Both);
+            _clientStream.Socket.Close();
+            await _clientStream.DisposeAsync();
+        }
     }
 }

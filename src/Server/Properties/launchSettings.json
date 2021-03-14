@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "FunkyChat.Server": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}

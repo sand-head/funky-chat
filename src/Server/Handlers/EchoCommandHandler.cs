@@ -28,8 +28,8 @@ namespace FunkyChat.Server.Handlers
                 }
             };
 
-            response.WriteTo(notification.Output);
-            await notification.Output.FlushAsync(cancellationToken);
+            response.WriteTo(notification.Connection.Output);
+            await notification.Connection.Output.FlushAsync(cancellationToken);
         }
     }
 }

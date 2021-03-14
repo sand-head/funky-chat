@@ -94,24 +94,36 @@ namespace FunkyChat.Server.Services
                 {
                     var result = await connection.Input.ReadAsync(cancellationToken);
                     var command = Command.Parser.ParseFrom(result.Buffer);
-
-                    switch (command.CommandCase)
+                    if (command.CommandCase == CommandType.Exit)
                     {
-                        case CommandType.Echo:
-                            await _mediator.Publish(new EchoCommandContext(connection, command.Echo), cancellationToken);
-                            break;
+                        _logger.LogInformation("Client {Id} disconnected", connection.UserId);
+                        break;
                     }
+
+                    // todo: implement the chat command types
+                    await _mediator.Publish(command.CommandCase switch
+                    {
+                        CommandType.Echo => new EchoCommandContext
+                        {
+                            Command = command.Echo,
+                            Connection = connection
+                        },
+                        CommandType.Chat => throw new System.NotImplementedException(),
+                        CommandType.DirectChat => throw new System.NotImplementedException(),
+                        _ => throw new System.NotImplementedException(),
+                    }, cancellationToken);
 
                     connection.Input.AdvanceTo(result.Buffer.End);
                 }
             }
             catch (IOException e)
             {
-                _logger.LogInformation("Connection with client {Id} closed: {Message}", connection.ConnectionId, e.Message);
+                _logger.LogInformation("Connection with client {Id} unexpectedly closed: {Message}", connection.UserId, e.Message);
             }
             finally
             {
-                connection.Close();
+                await connection.CloseAsync();
+                _clients.Remove(connection.UserId);
             }
         }
     }
