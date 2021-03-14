@@ -2,10 +2,14 @@ syntax = "proto3";
 option csharp_namespace = "FunkyChat.Protos";
 
 // wrapper messages:
+
 // commands always go from the client to the server
 message Command {
 	oneof command {
 		EchoCommand echo = 1;
+		ChatCommand chat = 2;
+		DirectChatCommand direct_chat = 3;
+		ExitCommand exit = 4;
 	}
 }
 
@@ -14,19 +18,43 @@ message Response {
 	oneof response {
 		WelcomeResponse welcome = 1;
 		EchoResponse echo = 2;
+		JoinResponse join = 3;
+		LeaveResponse leave = 4;
+		ChatResponse chat = 5;
 	}
 }
 
 // commands:
+
 message EchoCommand {
 	string message = 1;
 }
+message ChatCommand {
+	string message = 1;
+}
+message DirectChatCommand {
+	string user_id = 1;
+	string message = 2;
+}
+message ExitCommand {}
 
 // responses:
-message WelcomeResponse {
-	string user_name = 1;
-}
 
+message WelcomeResponse {
+	string user_id = 1;
+	repeated string connected_users = 2;
+}
 message EchoResponse {
 	string message = 1;
+}
+message JoinResponse {
+	string user_id = 1;
+}
+message LeaveResponse {
+	string user_id = 1;
+}
+message ChatResponse {
+	string user_id = 1;
+	string message = 2;
+	bool is_direct = 3;
 }

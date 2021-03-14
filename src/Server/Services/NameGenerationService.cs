@@ -24,8 +24,9 @@ namespace FunkyChat.Server.Services
         {
             var adjective = _adjectives[_random.Next(_adjectives.Count)];
             var noun = _nouns[_random.Next(_nouns.Count)];
+            var discriminator = _random.Next(10000).ToString("D4");
 
-            return $"{adjective}{noun.First().ToString().ToUpper()}{noun[1..]}";
+            return $"{adjective}{noun.First().ToString().ToUpper()}{noun[1..]}{discriminator}";
         }
     }
 }

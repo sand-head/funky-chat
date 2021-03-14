@@ -8,19 +8,19 @@ namespace FunkyChat.Server.Models
     {
         private readonly NetworkStream _clientStream;
 
-        public ChatConnection(NetworkStream clientStream, string username)
+        public ChatConnection(NetworkStream clientStream, string userId)
         {
             _clientStream = clientStream;
 
             ConnectionId = Guid.NewGuid();
-            Username = username;
+            UserId = userId;
             Input = PipeReader.Create(_clientStream);
             Output = PipeWriter.Create(_clientStream);
         }
 
         public Guid ConnectionId { get; }
 
-        public string Username { get; set; }
+        public string UserId { get; set; }
 
         public PipeReader Input { get; }
 

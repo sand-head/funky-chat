@@ -41,7 +41,7 @@ namespace FunkyChat.Server.Services
                 {
                     var socket = await _listenSocket.AcceptAsync();
                     var connection = new ChatConnection(new NetworkStream(socket), _nameGeneration.Generate());
-                    _logger.LogInformation("Connected to client \"{Username}\" (Id: {ConnectionId})", connection.Username, connection.ConnectionId);
+                    _logger.LogInformation("Connected to client \"{Username}\" (Id: {ConnectionId})", connection.UserId, connection.ConnectionId);
                     await SendWelcomeMessageAsync(connection, cancellationToken);
                     _ = ReadIncomingAsync(connection, cancellationToken);
                 }
@@ -59,7 +59,7 @@ namespace FunkyChat.Server.Services
             {
                 Welcome = new WelcomeResponse
                 {
-                    UserName = connection.Username
+                    UserId = connection.UserId
                 }
             };
 

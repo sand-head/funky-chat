@@ -24,9 +24,9 @@ namespace FunkyChat.Client
             // read welcome response for username
             var welcomeResult = await reader.ReadAsync();
             var welcomeResponse = Response.Parser.ParseFrom(welcomeResult.Buffer);
-            var username = welcomeResponse.Welcome.UserName;
+            var userId = welcomeResponse.Welcome.UserId;
             reader.AdvanceTo(welcomeResult.Buffer.End);
-            Console.WriteLine($"Connected! Welcome, {username}!");
+            Console.WriteLine($"Connected! Welcome, {userId}!");
 
             while (true)
             {
