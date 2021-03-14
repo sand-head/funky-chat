@@ -5,7 +5,9 @@ using Google.Protobuf;
 using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -19,6 +21,7 @@ namespace FunkyChat.Server.Services
         private readonly ILogger<ConnectionService> _logger;
         private readonly IMediator _mediator;
         private readonly NameGenerationService _nameGeneration;
+        private readonly Dictionary<string, ChatConnection> _clients;
         private Socket _listenSocket;
 
         public ConnectionService(ILogger<ConnectionService> logger, IMediator mediator, NameGenerationService nameGeneration)
@@ -26,6 +29,7 @@ namespace FunkyChat.Server.Services
             _logger = logger;
             _mediator = mediator;
             _nameGeneration = nameGeneration;
+            _clients = new Dictionary<string, ChatConnection>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -40,8 +44,18 @@ namespace FunkyChat.Server.Services
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var socket = await _listenSocket.AcceptAsync();
-                    var connection = new ChatConnection(new NetworkStream(socket), _nameGeneration.Generate());
+
+                    string name = _nameGeneration.Generate();
+                    while (_clients.ContainsKey(name))
+                    {
+                        // generate names until there is no longer a conflict
+                        name = _nameGeneration.Generate();
+                    }
+
+                    var connection = new ChatConnection(new NetworkStream(socket), name);
+                    _clients.Add(name, connection);
                     _logger.LogInformation("Connected to client \"{Username}\" (Id: {ConnectionId})", connection.UserId, connection.ConnectionId);
+                    
                     await SendWelcomeMessageAsync(connection, cancellationToken);
                     _ = ReadIncomingAsync(connection, cancellationToken);
                 }
@@ -62,6 +76,11 @@ namespace FunkyChat.Server.Services
                     UserId = connection.UserId
                 }
             };
+
+            foreach (var userId in _clients.Keys.Where(id => id != connection.UserId))
+            {
+                response.Welcome.ConnectedUsers.Add(userId);
+            }
 
             response.WriteTo(connection.Output);
             await connection.Output.FlushAsync(cancellationToken);
