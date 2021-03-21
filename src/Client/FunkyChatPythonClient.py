@@ -1,7 +1,7 @@
 import socket
 import tkinter as tk
 # from src.PythonClient import messages_pb2 as mpb
-import messages_pb2 as mpb
+import Messages_pb2 as mpb
 
 HOST, PORT = '127.0.0.1', 13337
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
