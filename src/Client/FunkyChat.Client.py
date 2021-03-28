@@ -1,6 +1,6 @@
+
 import socket
 import tkinter as tk
-# from src.PythonClient import messages_pb2 as mpb
 import Messages_pb2 as mpb
 
 HOST, PORT = '127.0.0.1', 13337
@@ -44,4 +44,3 @@ def connect():
         print("<", response.echo.message)
 
 connect()
-

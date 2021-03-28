@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunkyChat.Server", "Server\FunkyChat.Server.csproj", "{C4EB77D6-6070-49D6-8CC2-5CDAE4CFACA4}"
 EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FunkyChat.Client", "Client\FunkyChat.Client.pyproj", "{D548A9EE-409E-4DFF-939F-B48AA6877ED5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,8 @@ Global
 		{C4EB77D6-6070-49D6-8CC2-5CDAE4CFACA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4EB77D6-6070-49D6-8CC2-5CDAE4CFACA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4EB77D6-6070-49D6-8CC2-5CDAE4CFACA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D548A9EE-409E-4DFF-939F-B48AA6877ED5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D548A9EE-409E-4DFF-939F-B48AA6877ED5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
