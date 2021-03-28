@@ -3,7 +3,11 @@ name: Server
 on:
   push:
     branches: [ main ]
+    paths:
+    - 'src/Server/**'
   pull_request:
+    paths:
+    - 'src/Server/**'
   workflow_dispatch:
 
 jobs:
