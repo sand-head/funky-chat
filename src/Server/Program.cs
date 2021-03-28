@@ -1,4 +1,5 @@
-﻿using FunkyChat.Server.Services;
+﻿using FunkyChat.Server.Infrastructure;
+using FunkyChat.Server.Services;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,7 +26,8 @@ namespace FunkyChat.Server
                     var adjectives = ReadEmbeddedList("FunkyChat.Server.Data.adjectives.txt");
                     var nouns = ReadEmbeddedList("FunkyChat.Server.Data.nouns.txt");
 
-                    services.AddSingleton(new NameGenerationService(adjectives, nouns));
+                    services.AddSingleton(new NameGenerationService(adjectives, nouns))
+                        .AddSingleton<ConnectionRepository>();
                     services.AddMediatR(typeof(Program));
                     services.AddHostedService<ConnectionService>();
                 });

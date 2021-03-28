@@ -1,10 +1,12 @@
 ﻿using FunkyChat.Protos;
+using FunkyChat.Server.Infrastructure;
 using FunkyChat.Server.Models;
-using FunkyChat.Server.Models.Commands;
+using FunkyChat.Server.Models.Notifications;
 using Google.Protobuf;
 using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,15 +23,15 @@ namespace FunkyChat.Server.Services
         private readonly ILogger<ConnectionService> _logger;
         private readonly IMediator _mediator;
         private readonly NameGenerationService _nameGeneration;
-        private readonly Dictionary<string, ChatConnection> _clients;
+        private readonly ConnectionRepository _connectionRepository;
         private Socket _listenSocket;
 
-        public ConnectionService(ILogger<ConnectionService> logger, IMediator mediator, NameGenerationService nameGeneration)
+        public ConnectionService(ILogger<ConnectionService> logger, IMediator mediator, NameGenerationService nameGeneration, ConnectionRepository connectionRepository)
         {
             _logger = logger;
             _mediator = mediator;
             _nameGeneration = nameGeneration;
-            _clients = new Dictionary<string, ChatConnection>();
+            _connectionRepository = connectionRepository;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -46,14 +48,14 @@ namespace FunkyChat.Server.Services
                     var socket = await _listenSocket.AcceptAsync();
 
                     string name = _nameGeneration.Generate();
-                    while (_clients.ContainsKey(name))
+                    while (_connectionRepository.ContainsId(name))
                     {
                         // generate names until there is no longer a conflict
                         name = _nameGeneration.Generate();
                     }
 
                     var connection = new ChatConnection(new NetworkStream(socket), name);
-                    _clients.Add(name, connection);
+                    _connectionRepository.Add(connection);
                     _logger.LogInformation("Connected to client \"{Username}\" (Id: {ConnectionId})", connection.UserId, connection.ConnectionId);
                     
                     await SendWelcomeMessageAsync(connection, cancellationToken);
@@ -77,7 +79,7 @@ namespace FunkyChat.Server.Services
                 }
             };
 
-            foreach (var userId in _clients.Keys.Where(id => id != connection.UserId))
+            foreach (var userId in _connectionRepository.UserIds.Where(id => id != connection.UserId))
             {
                 response.Welcome.ConnectedUsers.Add(userId);
             }
@@ -103,14 +105,22 @@ namespace FunkyChat.Server.Services
                     // todo: implement the chat command types
                     await _mediator.Publish(command.CommandCase switch
                     {
-                        CommandType.Echo => new EchoCommandContext
+                        CommandType.Echo => new EchoNotification
                         {
                             Command = command.Echo,
-                            Connection = connection
+                            UserId = connection.UserId
                         },
-                        CommandType.Chat => throw new System.NotImplementedException(),
-                        CommandType.DirectChat => throw new System.NotImplementedException(),
-                        _ => throw new System.NotImplementedException(),
+                        CommandType.Chat => new ChatNotification
+                        {
+                            Command = command.Chat,
+                            UserId = connection.UserId
+                        },
+                        CommandType.DirectChat => new DirectChatNotification
+                        {
+                            Command = command.DirectChat,
+                            UserId = connection.UserId
+                        },
+                        _ => throw new Exception($"Unknown command type received: {command.CommandCase}"),
                     }, cancellationToken);
 
                     connection.Input.AdvanceTo(result.Buffer.End);
@@ -123,7 +133,7 @@ namespace FunkyChat.Server.Services
             finally
             {
                 await connection.CloseAsync();
-                _clients.Remove(connection.UserId);
+                _connectionRepository.Remove(connection.UserId);
             }
         }
     }
