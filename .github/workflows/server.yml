@@ -62,7 +62,7 @@ jobs:
       with:
         push: true
         file: ./src/Server/Dockerfile
-        context: .
+        context: ./src
         platforms: linux/amd64,linux/arm64
         tags: |
           ghcr.io/${{ github.repository_owner }}/funky-chat:latest
