@@ -18,13 +18,13 @@ class BuildProtosCommand(Command):
         from grpc_tools import protoc
 
         # get all the protobuf files
-        protos = [str(proto) for proto in Path().glob("../Protos/**/*.proto")]
+        protos = [str(proto) for proto in Path().glob("../protos/**/*.proto")]
 
         # use protoc to compile them
         for proto in protos:
             command = [
                 "-I=.",
-                "--proto_path=../Protos",
+                "--proto_path=../protos",
                 "--python_out=."
             ]
             if protoc.main(command + protos) != 0:
