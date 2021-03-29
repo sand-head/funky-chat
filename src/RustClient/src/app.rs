@@ -1,14 +1,14 @@
 pub struct App {
-  /// Current value of the user's input
+  /// Current value of the user's input.
   pub input: String,
-  /// Received messages from the server
-  pub messages: Vec<String>
+  /// Received messages from the server.
+  pub messages: Vec<String>,
 }
 impl Default for App {
   fn default() -> Self {
     App {
       input: String::new(),
-      messages: Vec::new()
+      messages: Vec::new(),
     }
   }
 }

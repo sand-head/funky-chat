@@ -1,14 +1,15 @@
 use app::App;
 use crossterm::event;
-use event::Event;
+use input::Input;
 use ui::draw_app;
 
 use std::io;
 
 use anyhow::Result;
-use tui::{Terminal, backend::CrosstermBackend};
+use tui::{backend::CrosstermBackend, Terminal};
 
 mod app;
+mod input;
 mod ui;
 
 pub mod messages {
@@ -16,25 +17,32 @@ pub mod messages {
 }
 
 fn main() -> Result<()> {
+  // set up terminal
   let stdout = io::stdout();
   let backend = CrosstermBackend::new(stdout);
   let mut terminal = Terminal::new(backend)?;
   terminal.clear()?;
 
+  // set up application struct
   let mut app = App::default();
 
+  // set up user input
+  let input = Input::default();
+
   loop {
+    // draw the UI frame onto the terminal
     terminal.draw(|f| draw_app(f, &mut app))?;
 
-    // todo: handle user input
-    let event = event::read()?;
-    match event {
-      Event::Key(_) => {
-        println!("this is a key");
+    // handle user input
+    let user_input = input.next()?;
+    match user_input.code {
+      event::KeyCode::Backspace => {
+        app.input.pop();
       }
-      Event::Mouse(_) => {}
-      Event::Resize(_, _) => {}
+      event::KeyCode::Char(c) => {
+        app.input.push(c);
+      }
+      _ => {}
     }
-    println!();
   }
 }
