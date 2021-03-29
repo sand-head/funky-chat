@@ -7,6 +7,8 @@ pub struct Message {
 }
 
 pub struct App {
+  /// The local user's identifier.
+  pub user_id: Option<String>,
   /// Current value of the user's input.
   pub input: String,
   /// Received messages from the server.
@@ -15,6 +17,7 @@ pub struct App {
 impl Default for App {
   fn default() -> Self {
     App {
+      user_id: None,
       input: String::new(),
       messages: Vec::new(),
     }

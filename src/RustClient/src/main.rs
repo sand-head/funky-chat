@@ -1,5 +1,5 @@
 use app::{App, Message};
-use chrono::{DateTime, Local};
+use chrono::Local;
 use connection::Connection;
 use crossterm::event;
 use events::EventHandler;
@@ -9,6 +9,8 @@ use std::io;
 
 use anyhow::Result;
 use tui::{backend::CrosstermBackend, Terminal};
+
+use crate::messages::{Command, ChatCommand, command::Command as CommandType};
 
 mod app;
 mod connection;
@@ -40,11 +42,24 @@ fn main() -> Result<()> {
     terminal.draw(|f| draw_app(f, &mut app))?;
 
     // wait for incoming events
-    let event = event.next()?;
-    match event {
+    let next_event = event.next()?;
+    match next_event {
       events::Event::UserInput(key_event) => match key_event.code {
         event::KeyCode::Backspace => {
           app.input.pop();
+        }
+        event::KeyCode::Enter => {
+          if app.input.len() == 0 {
+            // don't send empty messages to the server!
+            continue;
+          }
+
+          // todo: parse commands
+          connection.send(Command {
+            command: Some(CommandType::Chat(ChatCommand {
+              message: app.input.drain(..).collect()
+            }))
+          })?;
         }
         event::KeyCode::Char(c) => {
           app.input.push(c);
@@ -53,6 +68,7 @@ fn main() -> Result<()> {
       },
       events::Event::ServerResponse(res) => match res {
         messages::response::Response::Welcome(welcome) => {
+          app.user_id = Some(welcome.user_id.clone());
           let connected_users = if welcome.connected_users.len() > 0 {
             welcome.connected_users.join(", ")
           } else {
@@ -70,10 +86,23 @@ fn main() -> Result<()> {
             timestamp: Local::now()
           });
         }
-        messages::response::Response::Echo(_) => {}
+        messages::response::Response::Echo(echo) => {
+          app.messages.push(Message {
+            from: app.user_id.clone(),
+            message: echo.message,
+            timestamp: Local::now()
+          });
+        }
+        messages::response::Response::Chat(chat) => {
+          // todo: format differently for direct chat messages
+          app.messages.push(Message {
+            from: Some(chat.user_id),
+            message: chat.message,
+            timestamp: Local::now()
+          });
+        }
         messages::response::Response::Join(_) => {}
         messages::response::Response::Leave(_) => {}
-        messages::response::Response::Chat(_) => {}
       },
     }
   }
