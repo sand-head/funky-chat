@@ -16,6 +16,7 @@ use crate::{
 
 const BUFFER_SIZE: usize = 2048;
 
+/// Reads bytes from the given stream until the packet is finished being sent.
 fn read_entire_msg(stream: &mut TcpStream) -> Vec<u8> {
   let mut data: Vec<u8> = Vec::new();
   let mut total_size: usize = 0;
@@ -43,30 +44,31 @@ pub struct Connection {
   send_handle: JoinHandle<()>,
 }
 impl Connection {
+  /// Connect to the specified host and port, returning the resulting connection.
   pub fn connect(addr: &str, event: &EventHandler) -> Result<Self> {
     let mut client = TcpStream::connect(addr)?;
 
     // handle incoming responses from server
     let tx = event.clone_sender();
     let mut recv_client = client.try_clone().expect("Could not clone client");
-    let recv_handle = thread::spawn(move || {
-      loop {
-        let data = Bytes::from(read_entire_msg(&mut recv_client));
-        let response = Response::decode(data).expect("Could not decode response from server");
+    let recv_handle = thread::spawn(move || loop {
+      // block until data is received from the server
+      let data = Bytes::from(read_entire_msg(&mut recv_client));
+      let response = Response::decode(data).expect("Could not decode response from server");
 
-        if let None = response.response {
-          // no op
-          continue;
-        } else {
-          tx.send(Event::ServerResponse(response.response.unwrap()))
-            .expect("Could not send response event");
-        }
+      if let None = response.response {
+        // no op -- we got bad data
+        continue;
+      } else {
+        tx.send(Event::ServerResponse(response.response.unwrap()))
+          .expect("Could not send response event");
       }
     });
 
     // handle outgoing commands to server
     let (tx, rx) = mpsc::channel();
     let send_handle = thread::spawn(move || loop {
+      // block until a command is received
       let command: Command = rx.recv().unwrap();
       let mut buffer = Vec::<u8>::new();
       command
@@ -84,6 +86,7 @@ impl Connection {
     })
   }
 
+  /// Send a command to the specified connection.
   pub fn send(&self, command: Command) -> Result<(), SendError<Command>> {
     self.tx.send(command)
   }

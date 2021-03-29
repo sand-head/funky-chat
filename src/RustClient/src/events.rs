@@ -53,11 +53,7 @@ impl EventHandler {
     self.rx.recv()
   }
 
-  /// Invokes the specified event.
-  pub fn invoke(&self, event: Event) -> Result<(), mpsc::SendError<Event>> {
-    self.tx.send(event)
-  }
-
+  /// Clones the sender, allowing it to be used by another thread.
   pub fn clone_sender(&self) -> mpsc::Sender<Event> {
     self.tx.clone()
   }

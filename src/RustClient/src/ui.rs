@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use tui::{
   backend::Backend,
   layout::{Constraint, Direction, Layout},
@@ -24,7 +22,7 @@ pub fn draw_app<B: Backend>(frame: &mut Frame<B>, app: &mut App) {
     .iter()
     .enumerate()
     .map(|(_, msg)| {
-      let content: Span = Span::raw(if let Some(from) = &msg.from {
+      let content = Span::raw(if let Some(from) = &msg.from {
         format!("[{}] {}: {}", msg.timestamp.format("%r"), from, msg.message)
       } else {
         format!("[{}] {}", msg.timestamp.format("%r"), msg.message)

@@ -45,6 +45,7 @@ fn main() -> Result<()> {
     let next_event = event.next()?;
     match next_event {
       events::Event::UserInput(key_event) => match key_event.code {
+        // handle user input in the text box
         event::KeyCode::Backspace => {
           app.input.pop();
         }
@@ -67,6 +68,7 @@ fn main() -> Result<()> {
         _ => {}
       },
       events::Event::ServerResponse(res) => match res {
+        // handle incoming responses from the server
         messages::response::Response::Welcome(welcome) => {
           app.user_id = Some(welcome.user_id.clone());
           let connected_users = if welcome.connected_users.len() > 0 {
