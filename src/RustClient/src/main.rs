@@ -10,7 +10,7 @@ use std::io;
 use anyhow::Result;
 use tui::{backend::CrosstermBackend, Terminal};
 
-use crate::messages::{Command, ChatCommand, command::Command as CommandType};
+use crate::messages::{Command, ChatCommand, DirectChatCommand, ExitCommand, command::Command as CommandType};
 
 mod app;
 mod connection;
@@ -55,12 +55,37 @@ fn main() -> Result<()> {
             continue;
           }
 
-          // todo: parse commands
-          connection.send(Command {
-            command: Some(CommandType::Chat(ChatCommand {
-              message: app.input.drain(..).collect()
-            }))
-          })?;
+          let user_input: String = app.input.drain(..).collect();
+          let mut command = Command {
+            command: None
+          };
+
+          if user_input.starts_with(".exit") {
+            command.command = Some(CommandType::Exit(ExitCommand {}));
+            // send command and break from loop
+            connection.send(command)?;
+            break;
+          } else if user_input.starts_with(".chat") {
+            let args: Vec<&str> = user_input[".chat".len()..].trim().split(' ').collect();
+            if args.len() < 2 {
+              app.add_message(r#"The ".chat" command requires two arguments: the recipient ID and the message."#);
+              continue;
+            } else if args[0] == app.user_id.clone().unwrap() {
+              app.add_message("You can't send a direct message to yourself!");
+              continue;
+            }
+
+            command.command = Some(CommandType::DirectChat(DirectChatCommand {
+              user_id: args[0].to_string(),
+              message: args[1..].join(" ")
+            }));
+          } else {
+            command.command = Some(CommandType::Chat(ChatCommand {
+              message: user_input
+            }));
+          }
+
+          connection.send(command)?;
         }
         event::KeyCode::Char(c) => {
           app.input.push(c);
@@ -77,16 +102,8 @@ fn main() -> Result<()> {
             "None".to_string()
           };
 
-          app.messages.push(Message {
-            from: None,
-            message: format!("Welcome, {}!", welcome.user_id).to_string(),
-            timestamp: Local::now()
-          });
-          app.messages.push(Message {
-            from: None,
-            message: format!("Online users: {}", connected_users).to_string(),
-            timestamp: Local::now()
-          });
+          app.add_message(&format!("Welcome, {}!", welcome.user_id));
+          app.add_message(&format!("Online users: {}", connected_users));
         }
         messages::response::Response::Echo(echo) => {
           app.messages.push(Message {
@@ -96,28 +113,28 @@ fn main() -> Result<()> {
           });
         }
         messages::response::Response::Chat(chat) => {
-          // todo: format differently for direct chat messages
+          let from = if chat.is_direct {
+            // todo: fix how this is broken for the user who sends the direct message
+            format!("{} > {}", chat.user_id, app.user_id.clone().unwrap())
+          } else {
+            chat.user_id
+          };
+
           app.messages.push(Message {
-            from: Some(chat.user_id),
+            from: Some(from),
             message: chat.message,
             timestamp: Local::now()
           });
         }
         messages::response::Response::Join(join) => {
-          app.messages.push(Message {
-            from: None,
-            message: format!("{} has joined the funky chat.", join.user_id),
-            timestamp: Local::now()
-          });
+          app.add_message(&format!("{} has joined the funky chat.", join.user_id));
         }
         messages::response::Response::Leave(leave) => {
-          app.messages.push(Message {
-            from: None,
-            message: format!("{} has left the funky chat.", leave.user_id),
-            timestamp: Local::now()
-          });
+          app.add_message(&format!("{} has left the funky chat.", leave.user_id));
         }
       },
     }
   }
+
+  Ok(())
 }

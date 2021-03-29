@@ -27,3 +27,12 @@ impl Default for App {
     }
   }
 }
+impl App {
+  pub fn add_message(&mut self, msg: &str) {
+    self.messages.push(Message {
+      from: None,
+      message: msg.to_string(),
+      timestamp: Local::now()
+    });
+  }
+}
