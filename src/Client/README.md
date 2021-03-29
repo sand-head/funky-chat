@@ -11,3 +11,5 @@ The client application, written in Python.
 
 ## Resources used
 * https://godatadriven.com/blog/a-practical-guide-to-using-setup-py/
+* https://docs.python.org/3/library/socket.html
+* https://developers.google.com/protocol-buffers/docs/reference/python-generated
