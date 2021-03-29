@@ -1,9 +1,9 @@
-use tui::{Frame, backend::Backend, layout::{Constraint, Direction, Layout}, widgets::{Block, Borders, List, Paragraph}};
+use tui::{Frame, backend::Backend, layout::{Constraint, Direction, Layout}, text::Span, widgets::{Block, Borders, List, ListItem, Paragraph}};
 use unicode_width::UnicodeWidthStr;
 
 use crate::app::App;
 
-pub fn draw<B: Backend>(frame: &mut Frame<B>, app: &mut App) {
+pub fn draw_app<B: Backend>(frame: &mut Frame<B>, app: &mut App) {
   let chunks = Layout::default()
     .direction(Direction::Vertical)
     .margin(1)
@@ -15,7 +15,15 @@ pub fn draw<B: Backend>(frame: &mut Frame<B>, app: &mut App) {
     )
     .split(frame.size());
 
-  let messages = List::new(Vec::new())
+  let messages: Vec<ListItem> = app.messages
+    .iter()
+    .enumerate()
+    .map(|(_, msg)| {
+      let content = Span::raw(msg);
+      ListItem::new(content)
+    })
+    .collect();
+  let messages = List::new(messages)
     .block(
       Block::default()
         .title("Messages")
