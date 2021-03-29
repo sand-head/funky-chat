@@ -9,7 +9,7 @@ use crate::messages::response::Response;
 
 pub enum Event {
   UserInput(KeyEvent),
-  ServerResponse(Response)
+  ServerResponse(Response),
 }
 
 pub struct EventHandler {
@@ -40,7 +40,11 @@ impl Default for EventHandler {
       })
     };
 
-    EventHandler { tx, rx, input_handle }
+    EventHandler {
+      tx,
+      rx,
+      input_handle,
+    }
   }
 }
 impl EventHandler {

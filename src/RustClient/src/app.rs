@@ -1,7 +1,9 @@
+use chrono::{DateTime, Local};
 
 pub struct Message {
   pub from: Option<String>,
-  pub message: String
+  pub message: String,
+  pub timestamp: DateTime<Local>
 }
 
 pub struct App {

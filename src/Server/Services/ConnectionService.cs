@@ -84,6 +84,7 @@ namespace FunkyChat.Server.Services
                 response.Welcome.ConnectedUsers.Add(userId);
             }
 
+            _logger.LogInformation("Sending: {Array}", response.ToByteArray());
             response.WriteTo(connection.Output);
             await connection.Output.FlushAsync(cancellationToken);
         }

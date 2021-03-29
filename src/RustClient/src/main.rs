@@ -1,5 +1,6 @@
 use app::{App, Message};
-use connection::connect;
+use chrono::{DateTime, Local};
+use connection::Connection;
 use crossterm::event;
 use events::EventHandler;
 use ui::draw_app;
@@ -32,7 +33,7 @@ fn main() -> Result<()> {
   let event = EventHandler::default();
 
   // connect to the FunkyChat server
-  connect("127.0.0.1:13337", &event)?;
+  let connection = Connection::connect("127.0.0.1:13337", &event)?;
 
   loop {
     // draw the UI frame onto the terminal
@@ -49,20 +50,31 @@ fn main() -> Result<()> {
           app.input.push(c);
         }
         _ => {}
-      }
+      },
       events::Event::ServerResponse(res) => match res {
         messages::response::Response::Welcome(welcome) => {
-          println!("received welcome event");
+          let connected_users = if welcome.connected_users.len() > 0 {
+            welcome.connected_users.join(", ")
+          } else {
+            "None".to_string()
+          };
+
           app.messages.push(Message {
             from: None,
-            message: format!("Welcome, {}!", welcome.user_id).to_string()
+            message: format!("Welcome, {}!", welcome.user_id).to_string(),
+            timestamp: Local::now()
+          });
+          app.messages.push(Message {
+            from: None,
+            message: format!("Online users: {}", connected_users).to_string(),
+            timestamp: Local::now()
           });
         }
         messages::response::Response::Echo(_) => {}
         messages::response::Response::Join(_) => {}
         messages::response::Response::Leave(_) => {}
         messages::response::Response::Chat(_) => {}
-      }
+      },
     }
   }
 }

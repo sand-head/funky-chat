@@ -25,9 +25,9 @@ pub fn draw_app<B: Backend>(frame: &mut Frame<B>, app: &mut App) {
     .enumerate()
     .map(|(_, msg)| {
       let content: Span = Span::raw(if let Some(from) = &msg.from {
-        format!("{}: {}", from, msg.message)
+        format!("[{}] {}: {}", msg.timestamp.format("%r"), from, msg.message)
       } else {
-        format!("{}", msg.message)
+        format!("[{}] {}", msg.timestamp.format("%r"), msg.message)
       });
       ListItem::new(content)
     })
