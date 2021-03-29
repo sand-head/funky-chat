@@ -101,8 +101,20 @@ fn main() -> Result<()> {
             timestamp: Local::now()
           });
         }
-        messages::response::Response::Join(_) => {}
-        messages::response::Response::Leave(_) => {}
+        messages::response::Response::Join(join) => {
+          app.messages.push(Message {
+            from: None,
+            message: format!("{} has joined the funky chat.", join.user_id),
+            timestamp: Local::now()
+          });
+        }
+        messages::response::Response::Leave(leave) => {
+          app.messages.push(Message {
+            from: None,
+            message: format!("{} has left the funky chat.", leave.user_id),
+            timestamp: Local::now()
+          });
+        }
       },
     }
   }
