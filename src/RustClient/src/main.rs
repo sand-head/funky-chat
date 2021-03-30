@@ -97,6 +97,9 @@ fn main() -> Result<()> {
         messages::response::Response::Welcome(mut welcome) => {
           app.user_id = Some(welcome.user_id.clone());
           app.online_users.append(&mut welcome.connected_users);
+          // todo: do this better
+          // maybe have the local user's name italicized?
+          app.online_users.push(welcome.user_id.clone());
 
           app.add_message(&format!("Welcome, {}!", welcome.user_id));
         }

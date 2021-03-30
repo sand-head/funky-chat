@@ -1,7 +1,6 @@
-use tui::{style::Modifier, text::Span, widgets::{Block, Borders, List, ListItem}};
+use tui::{text::Span, widgets::{Block, Borders, List, ListItem}};
 
 use crate::app::App;
-
 
 pub fn draw_online_list(app: &mut App) -> List {
   let online: Vec<ListItem> = app
