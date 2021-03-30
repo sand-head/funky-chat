@@ -32,5 +32,8 @@ pub fn draw_app<B: Backend>(frame: &mut Frame<B>, app: &mut App) {
 
   // render chat input and set cursor to text position
   frame.render_widget(chat_input::draw_chat_input(app), vert_chunks[1]);
-  frame.set_cursor(vert_chunks[1].x + app.input.width() as u16 + 1, vert_chunks[1].y + 1);
+  frame.set_cursor(
+    vert_chunks[1].x + app.input.width() as u16 + 1,
+    vert_chunks[1].y + 1,
+  );
 }

@@ -1,4 +1,7 @@
-use tui::{text::Span, widgets::{Block, Borders, List, ListItem}};
+use tui::{
+  text::Span,
+  widgets::{Block, Borders, List, ListItem},
+};
 
 use crate::app::App;
 

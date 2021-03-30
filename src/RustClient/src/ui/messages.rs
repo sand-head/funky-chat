@@ -1,20 +1,25 @@
-use tui::{text::Span, widgets::{Block, Borders, List, ListItem}};
+use tui::{
+  text::Spans,
+  widgets::{Block, Borders, Paragraph, Wrap},
+};
 
 use crate::app::App;
 
-pub fn draw_messages(app: &mut App) -> List {
-  let messages: Vec<ListItem> = app
+pub fn draw_messages(app: &mut App) -> Paragraph {
+  let messages: Vec<Spans> = app
     .messages
     .iter()
     .enumerate()
     .map(|(_, msg)| {
-      let content = Span::raw(if let Some(from) = &msg.from {
+      Spans::from(if let Some(from) = &msg.from {
         format!("[{}] {}: {}", msg.timestamp.format("%r"), from, msg.message)
       } else {
         format!("[{}] {}", msg.timestamp.format("%r"), msg.message)
-      });
-      ListItem::new(content)
+      })
     })
+    .rev()
     .collect();
-  List::new(messages).block(Block::default().title("Messages").borders(Borders::ALL))
+  Paragraph::new(messages)
+    .block(Block::default().title("Messages").borders(Borders::ALL))
+    .wrap(Wrap { trim: true })
 }

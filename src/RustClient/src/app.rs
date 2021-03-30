@@ -3,7 +3,7 @@ use chrono::{DateTime, Local};
 pub struct Message {
   pub from: Option<String>,
   pub message: String,
-  pub timestamp: DateTime<Local>
+  pub timestamp: DateTime<Local>,
 }
 
 /// Holds the current state of the application.
@@ -32,7 +32,7 @@ impl App {
     self.messages.push(Message {
       from: None,
       message: msg.to_string(),
-      timestamp: Local::now()
+      timestamp: Local::now(),
     });
   }
 }

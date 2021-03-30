@@ -10,7 +10,10 @@ use std::io;
 use anyhow::Result;
 use tui::{backend::CrosstermBackend, Terminal};
 
-use crate::messages::{ChatCommand, Command, DirectChatCommand, ExitCommand, chat_response::OptionalToId, command::Command as CommandType};
+use crate::messages::{
+  chat_response::OptionalToId, command::Command as CommandType, ChatCommand, Command,
+  DirectChatCommand, ExitCommand,
+};
 
 mod app;
 mod connection;
@@ -44,54 +47,58 @@ fn main() -> Result<()> {
     // wait for incoming events
     let next_event = event.next()?;
     match next_event {
-      events::Event::UserInput(key_event) => match key_event.code {
-        // handle user input in the text box
-        event::KeyCode::Backspace => {
-          app.input.pop();
-        }
-        event::KeyCode::Enter => {
-          if app.input.len() == 0 {
-            // don't send empty messages to the server!
-            continue;
+      events::Event::Resize(_, _) => {
+        // stop blocking to allow the frame to re-draw
+        continue;
+      }
+      events::Event::UserInput(key_event) => {
+        match key_event.code {
+          // handle user input in the text box
+          event::KeyCode::Backspace => {
+            app.input.pop();
           }
-
-          let user_input: String = app.input.drain(..).collect();
-          let mut command = Command {
-            command: None
-          };
-
-          if user_input.starts_with(".exit") {
-            command.command = Some(CommandType::Exit(ExitCommand {}));
-            // send command and break from loop
-            connection.send(command)?;
-            break;
-          } else if user_input.starts_with(".chat") {
-            let args: Vec<&str> = user_input[".chat".len()..].trim().split(' ').collect();
-            if args.len() < 2 {
-              app.add_message(r#"The ".chat" command requires two arguments: the recipient ID and the message."#);
-              continue;
-            } else if args[0] == app.user_id.clone().unwrap() {
-              app.add_message("You can't send a direct message to yourself!");
+          event::KeyCode::Enter => {
+            if app.input.len() == 0 {
+              // don't send empty messages to the server!
               continue;
             }
 
-            command.command = Some(CommandType::DirectChat(DirectChatCommand {
-              user_id: args[0].to_string(),
-              message: args[1..].join(" ")
-            }));
-          } else {
-            command.command = Some(CommandType::Chat(ChatCommand {
-              message: user_input
-            }));
-          }
+            let user_input: String = app.input.drain(..).collect();
+            let mut command = Command { command: None };
 
-          connection.send(command)?;
+            if user_input.starts_with(".exit") {
+              command.command = Some(CommandType::Exit(ExitCommand {}));
+              // send command and break from loop
+              connection.send(command)?;
+              break;
+            } else if user_input.starts_with(".chat") {
+              let args: Vec<&str> = user_input[".chat".len()..].trim().split(' ').collect();
+              if args.len() < 2 {
+                app.add_message(r#"The ".chat" command requires two arguments: the recipient ID and the message."#);
+                continue;
+              } else if args[0] == app.user_id.clone().unwrap() {
+                app.add_message("You can't send a direct message to yourself!");
+                continue;
+              }
+
+              command.command = Some(CommandType::DirectChat(DirectChatCommand {
+                user_id: args[0].to_string(),
+                message: args[1..].join(" "),
+              }));
+            } else {
+              command.command = Some(CommandType::Chat(ChatCommand {
+                message: user_input,
+              }));
+            }
+
+            connection.send(command)?;
+          }
+          event::KeyCode::Char(c) => {
+            app.input.push(c);
+          }
+          _ => {}
         }
-        event::KeyCode::Char(c) => {
-          app.input.push(c);
-        }
-        _ => {}
-      },
+      }
       events::Event::ServerResponse(res) => match res {
         // handle incoming responses from the server
         messages::response::Response::Welcome(mut welcome) => {
@@ -107,7 +114,7 @@ fn main() -> Result<()> {
           app.messages.push(Message {
             from: app.user_id.clone(),
             message: echo.message,
-            timestamp: Local::now()
+            timestamp: Local::now(),
           });
         }
         messages::response::Response::Chat(chat) => {
@@ -121,7 +128,7 @@ fn main() -> Result<()> {
           app.messages.push(Message {
             from: Some(from),
             message: chat.message,
-            timestamp: Local::now()
+            timestamp: Local::now(),
           });
         }
         messages::response::Response::Join(join) => {
