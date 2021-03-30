@@ -14,7 +14,7 @@ WORKDIR "/src/Server"
 # add protoc manually (Grpc.Tools doesn't support ARM)
 # RUN apt update && apt install -y -t buster-backports protobuf-compiler-grpc
 # trick Grpc.Tools to use it
-# ENV PROTOBUF_PROTOC=/usr/bin/protoc
+ENV PROTOBUF_PROTOC=/usr/bin/protoc
 # RUN ln -s /usr/bin ~/.nuget/packages/grpc.tools/2.36.4/tools/linux_
 RUN dotnet build "FunkyChat.Server.csproj" -c Release -o /app/build
 
