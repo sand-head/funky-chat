@@ -125,9 +125,13 @@ fn main() -> Result<()> {
           });
         }
         messages::response::Response::Join(join) => {
+          app.online_users.push(join.user_id.clone());
           app.add_message(&format!("{} has joined the funky chat.", join.user_id));
         }
         messages::response::Response::Leave(leave) => {
+          if let Some(pos) = app.online_users.iter().position(|x| *x == leave.user_id) {
+            app.online_users.remove(pos);
+          }
           app.add_message(&format!("{} has left the funky chat.", leave.user_id));
         }
       },
