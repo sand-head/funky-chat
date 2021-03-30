@@ -69,14 +69,16 @@ impl Connection {
     let (tx, rx) = mpsc::channel();
     let send_handle = thread::spawn(move || loop {
       // block until a command is received
-      let command: Command = rx.recv().unwrap();
-      let mut buffer = Vec::<u8>::new();
-      command
-        .encode(&mut buffer)
-        .expect("Could not encode command to buffer");
-      client
-        .write(&buffer)
-        .expect("Could not write command to server");
+      let command: Option<Command> = rx.recv().ok();
+      if let Some(command) = command {
+        let mut buffer = Vec::<u8>::new();
+        command
+          .encode(&mut buffer)
+          .expect("Could not encode command to buffer");
+        client
+          .write(&buffer)
+          .expect("Could not write command to server");
+      }
     });
 
     Ok(Connection {

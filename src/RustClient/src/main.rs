@@ -94,16 +94,11 @@ fn main() -> Result<()> {
       },
       events::Event::ServerResponse(res) => match res {
         // handle incoming responses from the server
-        messages::response::Response::Welcome(welcome) => {
+        messages::response::Response::Welcome(mut welcome) => {
           app.user_id = Some(welcome.user_id.clone());
-          let connected_users = if welcome.connected_users.len() > 0 {
-            welcome.connected_users.join(", ")
-          } else {
-            "None".to_string()
-          };
+          app.online_users.append(&mut welcome.connected_users);
 
           app.add_message(&format!("Welcome, {}!", welcome.user_id));
-          app.add_message(&format!("Online users: {}", connected_users));
         }
         messages::response::Response::Echo(echo) => {
           app.messages.push(Message {
@@ -136,5 +131,6 @@ fn main() -> Result<()> {
     }
   }
 
+  terminal.clear()?;
   Ok(())
 }
