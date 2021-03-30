@@ -13,7 +13,7 @@ WORKDIR "/src/Server"
 RUN apt install protobuf-compiler
 # trick Grpc.Tools to use it
 ENV PROTOBUF_PROTOC=/usr/bin/protoc
-RUN ln -s /usr/bin ~/.nuget/packages/grpc.tools/2.36.4/tools/linux_
+RUN ln -s /usr/bin ~/.nuget/packages/grpc.tools/2.35.0/tools/linux_
 RUN dotnet build "FunkyChat.Server.csproj" -c Release -o /app/build
 
 FROM build AS publish
