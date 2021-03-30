@@ -5,7 +5,7 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
 # add buster-backports source
-RUN echo "deb http://deb.debian.org/debian buster-backports main" | sudo tee /etc/apt/sources.list.d/backports.list
+RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee /etc/apt/sources.list.d/backports.list
 # add protoc manually (Grpc.Tools doesn't support ARM)
 RUN apt update && apt install -t buster-backports protobuf-compiler-grpc
 # trick Grpc.Tools to use it
