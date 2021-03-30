@@ -26,9 +26,8 @@ namespace FunkyChat.Server.Handlers
             {
                 Chat = new ChatResponse
                 {
-                    UserId = notification.UserId,
+                    FromId = notification.UserId,
                     Message = notification.Command.Message,
-                    IsDirect = false
                 }
             };
 

@@ -10,7 +10,7 @@ use std::io;
 use anyhow::Result;
 use tui::{backend::CrosstermBackend, Terminal};
 
-use crate::messages::{Command, ChatCommand, DirectChatCommand, ExitCommand, command::Command as CommandType};
+use crate::messages::{ChatCommand, Command, DirectChatCommand, ExitCommand, chat_response::OptionalToId, command::Command as CommandType};
 
 mod app;
 mod connection;
@@ -111,11 +111,11 @@ fn main() -> Result<()> {
           });
         }
         messages::response::Response::Chat(chat) => {
-          let from = if chat.is_direct {
-            // todo: fix how this is broken for the user who sends the direct message
-            format!("{} > {}", chat.user_id, app.user_id.clone().unwrap())
+          // format `from` differently for direct messages
+          let from = if let Some(OptionalToId::ToId(to_id)) = chat.optional_to_id {
+            format!("{} > {}", chat.from_id, to_id)
           } else {
-            chat.user_id
+            chat.from_id
           };
 
           app.messages.push(Message {

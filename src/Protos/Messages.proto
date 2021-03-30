@@ -55,7 +55,11 @@ message LeaveResponse {
 	string user_id = 1;
 }
 message ChatResponse {
-	string user_id = 1;
+	// The user ID the message was sent from
+	string from_id = 1;
 	string message = 2;
-	bool is_direct = 3;
+	oneof optional_to_id {
+		// The user ID the message is directed towards
+		string to_id = 3;
+	}
 }
