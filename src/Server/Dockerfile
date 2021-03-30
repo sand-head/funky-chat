@@ -10,12 +10,12 @@ RUN dotnet restore "Server/FunkyChat.Server.csproj"
 COPY . .
 WORKDIR "/src/Server"
 # add buster-backports source
-RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee /etc/apt/sources.list.d/backports.list
+# RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee /etc/apt/sources.list.d/backports.list
 # add protoc manually (Grpc.Tools doesn't support ARM)
-RUN apt update && apt install -y -t buster-backports protobuf-compiler-grpc
+# RUN apt update && apt install -y -t buster-backports protobuf-compiler-grpc
 # trick Grpc.Tools to use it
-ENV PROTOBUF_PROTOC=/usr/bin/protoc
-RUN ln -s /usr/bin ~/.nuget/packages/grpc.tools/2.35.0/tools/linux_
+# ENV PROTOBUF_PROTOC=/usr/bin/protoc
+# RUN ln -s /usr/bin ~/.nuget/packages/grpc.tools/2.36.4/tools/linux_
 RUN dotnet build "FunkyChat.Server.csproj" -c Release -o /app/build
 
 FROM build AS publish
