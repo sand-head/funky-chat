@@ -17,7 +17,8 @@ RUN case "$TARGETARCH" in \
     && wget "https://github.com/google/protobuf/releases/download/v$PROTOBUF_VERSION/protoc-$PROTOBUF_VERSION-linux-$arch.zip" -O protoc.zip \
     && unzip protoc.zip -d protoc \
     && cd protoc \
-    && cp bin/protoc /usr/bin/protoc
+    && chmod a+rx ./bin/protoc \
+    && cp ./bin/protoc /usr/bin/
 # trick Grpc.Tools to use it
 ENV PROTOBUF_PROTOC=/usr/bin/protoc
 
