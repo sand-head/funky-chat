@@ -15,12 +15,10 @@ RUN case "$TARGETARCH" in \
         *) arch="x86_64" ;; \
     esac \
     && wget "https://github.com/google/protobuf/releases/download/v$PROTOBUF_VERSION/protoc-$PROTOBUF_VERSION-linux-$arch.zip" -O protoc.zip \
-    && unzip protoc.zip -d protoc \
-    && cd protoc \
-    && chmod a+rx ./bin/protoc \
-    && cp ./bin/protoc /usr/bin/
+    && unzip protoc.zip \
+    && chmod a+rx ./bin/protoc
 # trick Grpc.Tools to use it
-ENV PROTOBUF_PROTOC=/usr/bin/protoc
+ENV PROTOBUF_PROTOC=/protoc/bin/protoc
 
 WORKDIR /src
 COPY ["Server/FunkyChat.Server.csproj", "Server/"]
