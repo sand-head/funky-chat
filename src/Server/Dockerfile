@@ -4,18 +4,28 @@ FROM mcr.microsoft.com/dotnet/runtime:5.0 AS base
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
+ARG PROTOBUF_VERSION=3.15.6
+# ARG ARCH=x86_64
+
+# add protoc manually (Grpc.Tools doesn't support ARM... yet)
+WORKDIR /protoc
+RUN apt-get update && apt-get install -y unzip
+RUN case "$TARGETARCH" in \
+        "arm64") arch="aarch_64" ;; \
+        *) arch="x86_64" ;; \
+    esac \
+    && wget "https://github.com/google/protobuf/releases/download/v$PROTOBUF_VERSION/protoc-$PROTOBUF_VERSION-linux-$arch.zip" -O protoc.zip \
+    && unzip protoc.zip -d protoc \
+    && cd protoc \
+    && cp bin/protoc /usr/bin/protoc
+# trick Grpc.Tools to use it
+ENV PROTOBUF_PROTOC=/usr/bin/protoc
+
 WORKDIR /src
 COPY ["Server/FunkyChat.Server.csproj", "Server/"]
 RUN dotnet restore "Server/FunkyChat.Server.csproj"
 COPY . .
 WORKDIR "/src/Server"
-# add buster-backports source
-# RUN echo "deb http://deb.debian.org/debian buster-backports main" | tee /etc/apt/sources.list.d/backports.list
-# add protoc manually (Grpc.Tools doesn't support ARM)
-# RUN apt update && apt install -y -t buster-backports protobuf-compiler-grpc
-# trick Grpc.Tools to use it
-ENV PROTOBUF_PROTOC=/usr/bin/protoc
-# RUN ln -s /usr/bin ~/.nuget/packages/grpc.tools/2.36.4/tools/linux_
 RUN dotnet build "FunkyChat.Server.csproj" -c Release -o /app/build
 
 FROM build AS publish
