@@ -1,18 +1,12 @@
-use app::{App, Message};
-use chrono::Local;
-use connection::Connection;
-use crossterm::event;
+use app::{App, AppState, Message, states::{StateHandler, connected::ConnectedState, server_input::ServerInputState}};
 use events::EventHandler;
-use ui::draw_app;
 
 use std::io;
 
 use anyhow::Result;
-use tui::{backend::CrosstermBackend, Terminal};
-
-use crate::messages::{
-  chat_response::OptionalToId, command::Command as CommandType, ChatCommand, Command,
-  DirectChatCommand, ExitCommand,
+use tui::{
+  backend::{Backend, CrosstermBackend},
+  Terminal,
 };
 
 mod app;
@@ -22,6 +16,18 @@ mod ui;
 
 pub mod messages {
   include!(concat!(env!("OUT_DIR"), "/funkychat.protos.rs"));
+}
+
+fn handle_app_frame<B: Backend>(
+  terminal: &mut Terminal<B>,
+  event: &EventHandler,
+  app: &mut App,
+) -> Result<()> {
+  match app.state {
+    app::AppState::ServerInput => ServerInputState::handle(terminal, event, app),
+    app::AppState::Connected => ConnectedState::handle(terminal, event, app),
+    _ => panic!("wow we do not support that state yet! how'd you get here??"),
+  }
 }
 
 fn main() -> Result<()> {
@@ -37,112 +43,9 @@ fn main() -> Result<()> {
   // set up event handler
   let event = EventHandler::default();
 
-  // connect to the FunkyChat server
-  let connection = Connection::connect("127.0.0.1:13337", &event)?;
-
-  loop {
-    // draw the UI frame onto the terminal
-    terminal.draw(|f| draw_app(f, &mut app))?;
-
-    // wait for incoming events
-    let next_event = event.next()?;
-    match next_event {
-      events::Event::Resize(_, _) => {
-        // stop blocking to allow the frame to re-draw
-        continue;
-      }
-      events::Event::UserInput(key_event) => {
-        match key_event.code {
-          // handle user input in the text box
-          event::KeyCode::Backspace => {
-            app.input.pop();
-          }
-          event::KeyCode::Enter => {
-            if app.input.len() == 0 {
-              // don't send empty messages to the server!
-              continue;
-            }
-
-            let user_input: String = app.input.drain(..).collect();
-            let mut command = Command { command: None };
-
-            if user_input.starts_with(".exit") {
-              command.command = Some(CommandType::Exit(ExitCommand {}));
-              // send command and break from loop
-              connection.send(command)?;
-              break;
-            } else if user_input.starts_with(".chat") {
-              let args: Vec<&str> = user_input[".chat".len()..].trim().split(' ').collect();
-              if args.len() < 2 {
-                app.add_message(r#"The ".chat" command requires two arguments: the recipient ID and the message."#);
-                continue;
-              } else if args[0] == app.user_id.clone().unwrap() {
-                app.add_message("You can't send a direct message to yourself!");
-                continue;
-              }
-
-              command.command = Some(CommandType::DirectChat(DirectChatCommand {
-                user_id: args[0].to_string(),
-                message: args[1..].join(" "),
-              }));
-            } else {
-              command.command = Some(CommandType::Chat(ChatCommand {
-                message: user_input,
-              }));
-            }
-
-            connection.send(command)?;
-          }
-          event::KeyCode::Char(c) => {
-            app.input.push(c);
-          }
-          _ => {}
-        }
-      }
-      events::Event::ServerResponse(res) => match res {
-        // handle incoming responses from the server
-        messages::response::Response::Welcome(mut welcome) => {
-          app.user_id = Some(welcome.user_id.clone());
-          app.online_users.append(&mut welcome.connected_users);
-          // todo: do this better
-          // maybe have the local user's name italicized?
-          app.online_users.push(welcome.user_id.clone());
-
-          app.add_message(&format!("Welcome, {}!", welcome.user_id));
-        }
-        messages::response::Response::Echo(echo) => {
-          app.messages.push(Message {
-            from: app.user_id.clone(),
-            message: echo.message,
-            timestamp: Local::now(),
-          });
-        }
-        messages::response::Response::Chat(chat) => {
-          // format `from` differently for direct messages
-          let from = if let Some(OptionalToId::ToId(to_id)) = chat.optional_to_id {
-            format!("{} > {}", chat.from_id, to_id)
-          } else {
-            chat.from_id
-          };
-
-          app.messages.push(Message {
-            from: Some(from),
-            message: chat.message,
-            timestamp: Local::now(),
-          });
-        }
-        messages::response::Response::Join(join) => {
-          app.online_users.push(join.user_id.clone());
-          app.add_message(&format!("{} has joined the funky chat.", join.user_id));
-        }
-        messages::response::Response::Leave(leave) => {
-          if let Some(pos) = app.online_users.iter().position(|x| *x == leave.user_id) {
-            app.online_users.remove(pos);
-          }
-          app.add_message(&format!("{} has left the funky chat.", leave.user_id));
-        }
-      },
-    }
+  // show the UI for the current state
+  while app.state != AppState::Disconnecting {
+    handle_app_frame(&mut terminal, &event, &mut app)?;
   }
 
   terminal.clear()?;

@@ -1,6 +1,8 @@
 use tui::{
   backend::Backend,
-  layout::{Constraint, Direction, Layout},
+  layout::{Alignment, Constraint, Direction, Layout},
+  text::Spans,
+  widgets::{Block, Borders, Paragraph},
   Frame,
 };
 use unicode_width::UnicodeWidthStr;
@@ -10,6 +12,31 @@ use crate::app::App;
 mod chat_input;
 mod messages;
 mod online;
+
+// Draws the host input textbox.
+pub fn draw_server_input<B: Backend>(frame: &mut Frame<B>, app: &mut App) {
+  let chunks = Layout::default()
+    .direction(Direction::Vertical)
+    .margin(1)
+    .constraints([
+      Constraint::Min(1),
+      Constraint::Length(1),
+      Constraint::Length(3),
+      Constraint::Min(1),
+    ])
+    .split(frame.size());
+
+  // render text
+  let text = Spans::from("Enter the server to connect to:");
+  let text = Paragraph::new(text).alignment(Alignment::Center);
+  frame.render_widget(text, chunks[1]);
+
+  // render textbox
+  let textbox = Paragraph::new(app.server.as_ref())
+    .block(Block::default().title("Server").borders(Borders::ALL));
+  frame.render_widget(textbox, chunks[2]);
+  frame.set_cursor(chunks[2].x + app.server.width() as u16 + 1, chunks[2].y + 1);
+}
 
 /// Draws the next frame of the application.
 pub fn draw_app<B: Backend>(frame: &mut Frame<B>, app: &mut App) {
