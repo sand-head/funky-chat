@@ -1,4 +1,4 @@
-use crate::{Message, app::AppState, connection::Connection, events::EventHandler};
+use crate::{Message, app::AppState, events::EventHandler};
 use anyhow::Result;
 use chrono::Local;
 use crossterm::event;
