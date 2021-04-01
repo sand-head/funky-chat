@@ -37,7 +37,7 @@ namespace FunkyChat.Server.Services
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             _listenSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            _listenSocket.Bind(new IPEndPoint(IPAddress.Loopback, 13337));
+            _listenSocket.Bind(new IPEndPoint(IPAddress.Any, 13337));
             _listenSocket.Listen();
             _logger.LogInformation("Listening for clients...");
 
