@@ -28,12 +28,12 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore -c Release -o /app/build
+      run: dotnet build --no-restore -c Release
     - name: Zip build
       uses: thedoctor0/zip-release@master
       with:
         filename: "funky-chat-server-${{ runner.os }}.zip"
-        directory: /app/build
+        directory: src/Server/bin/Release/net5.0
     - name: Upload to release
       uses: AButler/upload-release-assets@v2.0
       with:
