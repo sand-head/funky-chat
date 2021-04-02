@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  server:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - uses: actions/cache@v2
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore -c Release -o ./app/build
+    - name: Zip build
+      uses: thedoctor0/zip-release@master
+      with:
+        filename: "funky-chat-server-${{ matrix-os }}.zip"
+        directory: ./app/build
+    - name: Upload to release
+      uses: AButler/upload-release-assets@v2.0
+      with:
+        files: "**/funky-chat-server-${{ matrix-os }}.zip"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+  rust-client:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2

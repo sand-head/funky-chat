@@ -26,7 +26,7 @@ COPY ["Server/FunkyChat.Server.csproj", "Server/"]
 RUN dotnet restore "Server/FunkyChat.Server.csproj"
 COPY . .
 WORKDIR "/src/Server"
-RUN dotnet build "FunkyChat.Server.csproj" -c Release -o /app/build
+RUN dotnet build "FunkyChat.Server.csproj" --no-restore -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "FunkyChat.Server.csproj" -c Release -o /app/publish
