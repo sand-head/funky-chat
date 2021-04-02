@@ -51,12 +51,10 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
-    - run: cd src/RustClient/
     - name: Build
-      uses: actions-rs/cargo@v1
-      with:
-        command: build
-        args: --release --manifest-path=src/RustClient/Cargo.toml
+      run: |
+        cd src/RustClient/
+        cargo build --release
     - name: Zip build
       uses: papeloto/action-zip@v1
       with:
