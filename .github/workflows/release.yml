@@ -39,7 +39,32 @@ jobs:
       with:
         files: "**/funky-chat-server-${{ runner.os }}.zip"
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+
   rust-client:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
+    - name: Setup toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+    - run: cd src/RustClient/
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release
+    - name: Zip build
+      uses: papeloto/action-zip@v1
+      with:
+        files: target/release/
+        dest: "funky-chat-client-${{ runner.os }}.zip"
+    - name: Upload to release
+      uses: AButler/upload-release-assets@v2.0
+      with:
+        files: "**/funky-chat-client-${{ runner.os }}.zip"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+
