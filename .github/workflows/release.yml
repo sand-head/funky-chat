@@ -29,12 +29,12 @@ jobs:
     - name: Zip build
       uses: thedoctor0/zip-release@master
       with:
-        filename: "funky-chat-server-${{ matrix-os }}.zip"
+        filename: "funky-chat-server-${{ matrix.os }}.zip"
         directory: ./app/build
     - name: Upload to release
       uses: AButler/upload-release-assets@v2.0
       with:
-        files: "**/funky-chat-server-${{ matrix-os }}.zip"
+        files: "**/funky-chat-server-${{ matrix.os }}.zip"
         repo-token: ${{ secrets.GITHUB_TOKEN }}
   rust-client:
     runs-on: ubuntu-latest
