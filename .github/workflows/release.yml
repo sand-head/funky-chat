@@ -56,11 +56,11 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --release
+        args: --release --manifest-path=src/RustClient/Cargo.toml
     - name: Zip build
       uses: papeloto/action-zip@v1
       with:
-        files: target/release/
+        files: src/RustClient/target/release/
         dest: "funky-chat-client-${{ runner.os }}.zip"
     - name: Upload to release
       uses: AButler/upload-release-assets@v2.0
