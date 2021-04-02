@@ -29,9 +29,8 @@ namespace FunkyChat.Server.Handlers
                 {
                     Chat = new ChatResponse
                     {
-                        UserId = "Server",
+                        FromId = "Server",
                         Message = "The user you tried to message either is offline or does not exist, sorry!",
-                        IsDirect = true
                     }
                 };
 
@@ -44,9 +43,9 @@ namespace FunkyChat.Server.Handlers
             {
                 Chat = new ChatResponse
                 {
-                    UserId = notification.UserId,
+                    FromId = notification.UserId,
                     Message = notification.Command.Message,
-                    IsDirect = true
+                    ToId = notification.Command.UserId
                 }
             };
 
