@@ -30,10 +30,10 @@ jobs:
     - name: Build
       run: dotnet build --no-restore -c Release
     - name: Zip build
-      uses: thedoctor0/zip-release@master
+      uses: papeloto/action-zip@v1
       with:
-        filename: "funky-chat-server-${{ runner.os }}.zip"
-        directory: src/Server/bin/Release/net5.0
+        files: src/Server/bin/Release/net5.0/
+        dest: "funky-chat-server-${{ runner.os }}.zip"
     - name: Upload to release
       uses: AButler/upload-release-assets@v2.0
       with:
