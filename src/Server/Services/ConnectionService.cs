@@ -54,10 +54,20 @@ namespace FunkyChat.Server.Services
                         name = _nameGeneration.Generate();
                     }
 
+                    // create connection and broadcast join message
                     var connection = new ChatConnection(new NetworkStream(socket), name);
+                    var response = new Response
+                    {
+                        Join = new JoinResponse
+                        {
+                            UserId = name
+                        }
+                    };
+                    await _connectionRepository.SendToAll(response, cancellationToken);
+
+                    // add connection to repository, send welcome message, and read from socket
                     _connectionRepository.Add(connection);
                     _logger.LogInformation("Connected to client \"{Username}\" (Id: {ConnectionId})", connection.UserId, connection.ConnectionId);
-                    
                     await SendWelcomeMessageAsync(connection, cancellationToken);
                     _ = ReadIncomingAsync(connection, cancellationToken);
                 }
@@ -132,8 +142,19 @@ namespace FunkyChat.Server.Services
             }
             finally
             {
+                // close connection, remove from repository
                 await connection.CloseAsync();
                 _connectionRepository.Remove(connection.UserId);
+
+                // broadcast leave message
+                var response = new Response
+                {
+                    Leave = new LeaveResponse
+                    {
+                        UserId = connection.UserId
+                    }
+                };
+                await _connectionRepository.SendToAll(response, cancellationToken);
             }
         }
     }
